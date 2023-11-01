@@ -9,6 +9,6 @@ fn main() {
     let b: BigUint = BigUint::parse_bytes(b"100000000000000000000000000000", 10).unwrap();
     println!("a = {}", a);
     println!("b = {}", b);
-    a = a + b;
+    a += b;
     println!("a = {}", a);
 }
