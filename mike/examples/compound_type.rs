@@ -1,3 +1,8 @@
+use std::{
+    arch::x86_64::{_mm256_abs_epi16, _MM_EXCEPT_MASK},
+    string,
+};
+
 fn main() {
     // 元组 tuple
     println!("***** 元组 tuple *****");
@@ -14,14 +19,14 @@ fn main() {
 
     // 结构体 struct
     println!("\n***** 结构体 struct *****");
-    struct User {
+    struct User1 {
         // 定义结构体
         active: bool,
         username: String,
         email: String,
         age: u64,
     }
-    let user1 = User {
+    let user1 = User1 {
         // 创建结构体实例
         active: true,
         username: String::from("someusername123"),
