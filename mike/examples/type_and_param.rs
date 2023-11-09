@@ -253,24 +253,24 @@ fn onion() {
     println!("\n***** 洋葱结构 *****");
     use std::collections::HashMap;
 
-    type AAA = HashMap<String, Vec<u8>>;
-    type BBB = Vec<AAA>;
-    type CCC = HashMap<String, BBB>;
-    type DDD = Vec<CCC>;
-    type EEE = HashMap<String, DDD>;
+    type _AAA = HashMap<String, Vec<u8>>;
+    type _BBB = Vec<_AAA>;
+    type _CCC = HashMap<String, _BBB>;
+    type _DDD = Vec<_CCC>;
+    type _EEE = HashMap<String, _DDD>;
 }
 
 // newtype_and_struct
 fn newtype_and_struct() {
     use std::collections::HashMap;
 
-    struct AAA(Vec<u8>);
-    struct BBB {
-        hashmap: HashMap<String, AAA>,
+    struct _AAA(Vec<u8>);
+    struct _BBB {
+        hashmap: HashMap<String, _AAA>,
     }
-    struct CCC(BBB);
-    type DDD = Vec<CCC>;
-    type EEE = HashMap<String, Vec<DDD>>;
+    struct _CCC(_BBB);
+    type _DDD = Vec<_CCC>;
+    type _EEE = HashMap<String, Vec<_DDD>>;
 
     // 最后，EEE展开就类似下面这样（仅示意，无法编译通过）
     // HashMap<String, Vec<Vec<CCC(BBB {hashmap: HashMap<String, AAA<Vec<u8>>>})>>>
