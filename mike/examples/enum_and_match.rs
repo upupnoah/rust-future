@@ -370,7 +370,6 @@ fn match_in_function() {
         student: bool,
     }
 
-
     // 例子2
     fn foo1(
         User {
