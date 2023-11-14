@@ -42,13 +42,17 @@ fn main() {
 
     // 思考题2
     println!("\n***** 思考题2 *****");
-    # [derive(Debug)]
+    #[derive(Debug)]
     struct Point {
         _x: i64,
         _y: i64,
         _z: i64,
     }
-    let a = Point { _x: 1, _y: 2, _z: 3 };
+    let a = Point {
+        _x: 1,
+        _y: 2,
+        _z: 3,
+    };
     let b = a; // a is moved to b
     println!("b is {:?}", b); // error: value borrowed here after move
 }
