@@ -1,8 +1,3 @@
-use std::{
-    arch::x86_64::{_mm256_abs_epi16, _MM_EXCEPT_MASK},
-    string,
-};
-
 fn main() {
     // 元组 tuple
     println!("***** 元组 tuple *****");
