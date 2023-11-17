@@ -54,7 +54,7 @@ fn associated_type() {
     #[derive(Debug)]
     pub enum SportType {
         Land,
-        Water,
+        _Water,
     }
 
     impl Sport for Football {
@@ -84,7 +84,7 @@ fn use_associated_type_in_t() {
         type MyType;
     }
 
-    fn doit<T: TraitA>(a: T::MyType) {} // 这里在函数中使用了关联类型
+    fn doit<T: TraitA>(_a: T::MyType) {} // 这里在函数中使用了关联类型
 
     struct TypeA;
     impl TraitA for TypeA {
@@ -103,14 +103,14 @@ fn associated_type_in_constraint() {
     // 限制必须实现了 TraitA，而且它的关联类型必须是 String 才能代入这个 T
     struct Foo<T: TraitA<Item = String>> {
         // 这里在约束表达式中对关联类型做了具化
-        x: T,
+        _x: T,
     }
     struct A;
     impl TraitA for A {
         type Item = String;
     }
 
-    let a = Foo { x: A };
+    let _a = Foo { _x: A };
 }
 
 // 对关联类型的约束
@@ -151,7 +151,7 @@ fn strengthen_constraints_on_associated_types() {
     }
 
     // 表示只有实现过 TraitA 且其关联类型 Item 的具化版必须满足 Debug 和 PartialEq 的约束
-    fn doit<T>()
+    fn _doit<T>()
     where
         T: TraitA,                  // 使用 where 语句将 T 的约束表达放在后面来
         T::Item: Debug + PartialEq, // 注意这一句，直接对TraitA的关联类型Item添加了更多一个约束 PartialEq {}
@@ -219,7 +219,7 @@ fn constraint_dependence() {
     //     实际上表示：
     // T: Circle + Shape
     struct A;
-    struct B;
+    struct _B;
     impl Shape for A {
         fn area(&self) -> f64 {
             0.0
@@ -290,7 +290,7 @@ mod module_b {
     // use super::module_a::Shape; // 引入这个 trait
     // use super::module_a::A; // 这里只引入了另一个模块中的类型
     use super::module_a::{Shape, A}; // 引入 Shape trait
-    fn doit() {
+    fn _doit() {
         let a = A;
         a.play();
     }
@@ -315,13 +315,13 @@ fn constraint_as_needed() {
     impl TraitC for C {} // 对类型C实现了TraitC
 
     // 7个版本的doit() 函数
-    fn doit1<T: TraitA + TraitB + TraitC>(t: T) {}
-    fn doit2<T: TraitA + TraitB>(t: T) {}
-    fn doit3<T: TraitA + TraitC>(t: T) {}
-    fn doit4<T: TraitB + TraitC>(t: T) {}
-    fn doit5<T: TraitA>(t: T) {}
-    fn doit6<T: TraitB>(t: T) {}
-    fn doit7<T: TraitC>(t: T) {}
+    fn doit1<T: TraitA + TraitB + TraitC>(_t: T) {}
+    fn doit2<T: TraitA + TraitB>(_t: T) {}
+    fn doit3<T: TraitA + TraitC>(_t: T) {}
+    fn doit4<T: TraitB + TraitC>(_t: T) {}
+    fn doit5<T: TraitA>(_t: T) {}
+    fn doit6<T: TraitB>(_t: T) {}
+    fn doit7<T: TraitC>(_t: T) {}
 
     // 观察 A 实现了哪些 trait，看是否匹配，只能多，不能少
     doit1(A);
@@ -343,23 +343,23 @@ fn constraint_as_needed() {
 fn demo2() {
     use std::fmt::Display;
 
-    struct Pair<T> {
+    struct _Pair<T> {
         x: T,
         y: T,
     }
 
-    impl<T> Pair<T> {
+    impl<T> _Pair<T> {
         // 第一次 impl
         // new 方法不需要任何约束
-        fn new(x: T, y: T) -> Self {
+        fn _new(x: T, y: T) -> Self {
             Self { x, y }
         }
     }
 
     // Rust 中对类型是可以多次 impl 的
-    impl<T: Display + PartialOrd> Pair<T> {
+    impl<T: Display + PartialOrd> _Pair<T> {
         // 第二次 impl
-        fn cmp_display(&self) {
+        fn _cmp_display(&self) {
             if self.x >= self.y {
                 println!("The largest member is x = {}", self.x);
             } else {
@@ -373,7 +373,7 @@ fn demo2() {
 // 为了不导致混乱，Rust 要求在一个模块中，如果要对一个类型实现某个 trait，
 // 这个类型和这个 trait 其中必须有一个是在当前模块中定义的
 // 我们想给一个外部类型实现一个外部 trait，这是不允许的。Rustc 小助手提示我们，如果实在想用的话，可以用 Newtype 模式
-fn orphan() {
+fn _orphan() {
     println!("\n***** orphan *****");
     use std::fmt::Display;
 
@@ -400,7 +400,7 @@ fn orphan() {
         }
     }
     impl MyU32 {
-        fn get(&self) -> u32 {
+        fn _get(&self) -> u32 {
             // 需要定义一个获取真实数据的方法 self.0 }
             self.0
         }
