@@ -95,7 +95,7 @@ fn to_string_trait() {
     // 只要实现了 Display trait， 就可以自动实现 ToString trait
     println!("\n***** ToString trait *****");
     use std::fmt;
-    #[derive(Default)]
+    #[derive(Default)] 
     struct Point {
         x: i32,
         y: i32,
