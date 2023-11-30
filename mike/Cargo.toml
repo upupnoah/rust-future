@@ -9,3 +9,5 @@ edition = "2021"
 num-bigint = "^0.4.4"
 num-traits = "^0.2"
 tokio = { version = "1", features = ["full"] }
+thiserror = "^1.0"
+anyhow = "^1.0"
