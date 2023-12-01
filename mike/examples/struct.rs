@@ -1,16 +1,18 @@
 fn main() {
+    #![allow(unused_variables)]
+    #![allow(unused)]
     // 结构体
     struct User {
-        _active: bool,
-        _username: String,
-        _email: String,
-        _sign_in_count: u64,
+        active: bool,
+        username: String,
+        email: String,
+        sign_in_count: u64,
     }
-    let _user1 = User {
-        _active: true,
-        _username: String::from("someusername123"),
-        _email: String::from("someone@exmaple.com"),
-        _sign_in_count: 1,
+    let user1 = User {
+        active: true,
+        username: String::from("someusername123"),
+        email: String::from("someone@exmaple.com"),
+        sign_in_count: 1,
     };
     struct _Class {
         serial_number: u32,
@@ -21,21 +23,21 @@ fn main() {
 
     // 三种结构体: 命名结构体, 元组结构体 和 单元结构体
     println!("\n***** 命名结构体 *****");
-    let _active = true;
-    let _username = String::from("someusername123");
-    let _email = String::from("someone@example.com");
-    let mut _user1 = User {
-        _active, // 相当于 active: active
-        _username,
-        _email,
-        _sign_in_count: 1,
+    let active = true;
+    let username = String::from("someusername123");
+    let email = String::from("someone@example.com");
+    let mut user1 = User {
+        active, // 相当于 active: active
+        username,
+        email,
+        sign_in_count: 1,
     };
     // println!("{}", username); // 因为username是一个String, 上面复制给结构体的时候发生了所有权转移
-    _user1._email = String::from("anotheremail@example.com"); // 只有mut修饰的结构体变量才能修改
+    user1.email = String::from("anotheremail@example.com"); // 只有mut修饰的结构体变量才能修改
     let _user2 = User {
-        _email: String::from("newemail"),
+        email: String::from("newemail"),
         // 当结构体比较大的时候, 这种方法可以保持代码干净清爽
-        .._user1 // 使用..语法从其他实例中获取剩余的值
+        ..user1 // 使用..语法从其他实例中获取剩余的值
     };
 
     // 用户的信息存在数据库里，当我们要更新一个用户的一个字段的信息时，
@@ -56,33 +58,33 @@ fn main() {
     println!("\n***** 元组结构体 *****");
     struct Color(i32, i32, i32);
     struct Point(i32, i32, i32);
-    let _black = Color(0, 0, 0);
-    let _origin = Point(0, 0, 0);
+    let black = Color(0, 0, 0);
+    let origin = Point(0, 0, 0);
 
     // 单元结构体
     // 只有类型名字, 没有任何字段
     // 其实它就相当于定义了一种类型，它的名字就是一种信息，有类型名就可以进行实例化，承载很多东西
     struct ArticleModule;
-    let _article_module = ArticleModule; // 创建实例
+    let article_module = ArticleModule; // 创建实例
 
     // 结构体中的所有权问题
     #[derive(Debug)]
     struct TestUser {
-        _active: bool,
-        _username: String,
+        active: bool,
+        username: String,
         email: String,
-        _sign_in_count: u32,
+        sign_in_count: u32,
     }
-    let _active = true;
-    let _testuser = TestUser {
-        _active,
-        _username: String::from("someusername123"),
+    let active = true;
+    let testuser = TestUser {
+        active,
+        username: String::from("someusername123"),
         email: String::from("example@xx.com"),
-        _sign_in_count: 1,
+        sign_in_count: 1,
     };
-    let _email_clone = _testuser.email.clone();
-    let _email_ref = &_testuser.email;
-    let _email = _testuser.email; // 这里会发生所有权转移 (结构体中的email)
+    let email_clone = testuser.email.clone();
+    let email_ref = &testuser.email;
+    let email = testuser.email; // 这里会发生所有权转移 (结构体中的email)
 
     // println!("{:?}", _testuser); // 这里会报错, 因为部分所有权已经转移, 分别打印另外3个是ok的
 
