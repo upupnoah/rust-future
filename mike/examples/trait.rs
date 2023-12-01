@@ -291,7 +291,7 @@ mod module_b {
     // use super::module_a::A; // 这里只引入了另一个模块中的类型
     use super::module_a::{Shape, A}; // 引入 Shape trait
     fn _doit() {
-        let a = A;
+        let a: A = A;
         a.play();
     }
 }
