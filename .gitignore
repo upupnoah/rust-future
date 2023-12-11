@@ -16,3 +16,4 @@ Cargo.lock
 # personal
 .vscode/
 .idea/
+build/
