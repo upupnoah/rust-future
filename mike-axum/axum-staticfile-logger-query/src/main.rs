@@ -10,7 +10,7 @@ use tower_http::{
 
 #[tokio::main]
 async fn main() {
-    tracing_subscriber::fmt::init(); // initialize logging
+    tracing_subscriber::fmt::init(); // initialize logger
 
     tokio::join!(
         serve(serve_hello(), 3088),
