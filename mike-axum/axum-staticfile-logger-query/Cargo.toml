@@ -1,5 +1,5 @@
 [package]
-name = "axum_staticfile_logger_query"
+name = "axum-staticfile-logger-query"
 version = "0.1.0"
 edition = "2021"
 
