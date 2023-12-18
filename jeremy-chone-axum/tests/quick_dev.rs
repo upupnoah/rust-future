@@ -14,6 +14,9 @@ async fn quick_dev() -> Result<()> {
 
     // endregion: --- Test Hello
 
+    // do get before login
+    hc.do_get("/api/tickets").await?.print().await?;
+
     // region:    --- Test Login
     let req_login = hc.do_post(
         "/api/login",
@@ -33,8 +36,8 @@ async fn quick_dev() -> Result<()> {
         }),
     );
     req_create_ticket.await?.print().await?;
-    hc.do_get("/api/tickets").await?.print().await?;
-    hc.do_delete("/api/tickets/0").await?.print().await?;
+    // hc.do_get("/api/tickets").await?.print().await?;
+    // hc.do_delete("/api/tickets/0").await?.print().await?;
     // endregion: --- Test Create, List, Delete Ticket
 
     Ok(()) // required for test function
