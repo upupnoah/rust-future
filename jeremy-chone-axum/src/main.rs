@@ -1,24 +1,29 @@
 use std::net::SocketAddr;
 
-use crate::model::ModelController;
+use crate::{log::log_request, model::ModelController};
 
 pub use self::error::{Error, Result};
 
 use axum::{
     extract::{Path, Query},
+    http::{Method, Uri},
     middleware,
     response::{Html, IntoResponse, Response},
     routing::{get, get_service},
-    Router,
+    Json, Router,
 };
+use ctx::Ctx;
 use serde::Deserialize;
+use serde_json::json;
 use tokio::net::TcpListener;
 use tower::ServiceBuilder;
 use tower_cookies::CookieManagerLayer;
 use tower_http::services::ServeDir;
+use uuid::Uuid;
 
 mod ctx;
 mod error;
+mod log;
 mod model;
 mod web;
 
@@ -45,9 +50,13 @@ async fn main() -> Result<()> {
         .merge(web::routes_login::routes())
         .nest("/api", routes_apis)
         .layer(
-            // 推荐使用 ServiceBuilder, 顺序是自上而下, 符合直觉
+            // ServiceBuilder 符合直觉, 自上而下, 依次添加中间件, layer是自下而上
             ServiceBuilder::new()
                 .layer(CookieManagerLayer::new())
+                .layer(middleware::from_fn_with_state(
+                    mc.clone(),
+                    web::mw_auth::mw_ctx_resolver,
+                ))
                 .layer(middleware::map_response(main_response_mapper)),
         )
         .fallback_service(routes_static());
@@ -64,11 +73,44 @@ async fn main() -> Result<()> {
 }
 
 /// consume Response, return different Response(modify, or not)
-async fn main_response_mapper(res: Response) -> Response {
+async fn main_response_mapper(
+    ctx: Option<Ctx>,
+    uri: Uri,
+    req_method: Method,
+    res: Response,
+) -> Response {
     println!("->> {:12} - main-response_mapper", "RES_MAPPER");
-    println!();
+    let uuid = Uuid::new_v4();
+    // -- Get the eventual response error.
+    let service_error = res.extensions().get::<Error>();
 
-    res
+    // convert the error into a client error.
+    let client_status_error = service_error.map(|se| se.client_status_and_error());
+
+    // -- If client error, build the new response
+    let error_response = client_status_error
+        .as_ref()
+        .map(|(status_code, client_error)| {
+            let client_error_body = json!({
+                    "error" : {
+                        "type": client_error.as_ref(),
+                        "req_uuid": uuid.to_string(),
+                    }
+                }
+            );
+            println!("    ->> client_error_body: {client_error_body}");
+
+            // Build the new response from the client_error body.
+            (*status_code, Json(client_error_body)).into_response()
+        });
+
+    // Build and log the server log line.
+    // println!("    ->> server log line - {uuid} - Error: {service_error:?}");
+    let client_error = client_status_error.unzip().1;
+    let _ = log_request(uuid, req_method, uri, ctx, service_error, client_error).await;
+
+    println!();
+    error_response.unwrap_or(res)
 }
 
 fn routes_static() -> Router {
