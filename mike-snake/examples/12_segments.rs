@@ -50,31 +50,22 @@ impl Size {
 
 #[derive(PartialEq, Copy, Clone)]
 enum Direction {
-    A,
-    W,
-    D,
-    S,
+    Left,
+    Up,
+    Right,
+    Down,
 }
 
 impl Direction {
     fn opposite(self) -> Self {
         match self {
-            Self::A => Self::D,
-            Self::D => Self::A,
-            Self::W => Self::S,
-            Self::S => Self::W,
+            Self::Left => Self::Right,
+            Self::Right => Self::Left,
+            Self::Up => Self::Down,
+            Self::Down => Self::Up,
         }
     }
 }
-
-#[derive(Default, Resource)]
-struct LastTailPosition(Option<Position>);
-
-#[derive(Event)]
-struct GrowthEvent;
-
-#[derive(Event)]
-struct GameOverEvent;
 
 fn main() {
     App::new()
@@ -94,18 +85,12 @@ fn main() {
             TimerMode::Repeating,
         )))
         .insert_resource(BTimer(Timer::from_seconds(0.20, TimerMode::Repeating)))
-        .insert_resource(LastTailPosition::default())
-        .add_event::<GrowthEvent>()
-        .add_event::<GameOverEvent>()
         .add_systems(Startup, (setup_camera, spawn_snake))
         .add_systems(
             Update,
             (
                 snake_movement_input.before(snake_movement),
                 snake_movement,
-                game_over.after(snake_movement),
-                snake_eating,
-                snake_growth,
                 size_scaling,
                 position_translation,
             ),
@@ -129,7 +114,7 @@ fn spawn_snake(mut commands: Commands, mut segments: ResMut<SnakeSegments>) {
                 ..default()
             })
             .insert(SnakeHead {
-                direction: Direction::W,
+                direction: Direction::Up,
             })
             .insert(SnakeSegment)
             .insert(Position { x: 3, y: 3 })
@@ -141,14 +126,14 @@ fn spawn_snake(mut commands: Commands, mut segments: ResMut<SnakeSegments>) {
 
 fn snake_movement_input(keyboard_input: Res<Input<KeyCode>>, mut heads: Query<&mut SnakeHead>) {
     if let Some(mut head) = heads.iter_mut().next() {
-        let dir: Direction = if keyboard_input.just_pressed(KeyCode::A) {
-            Direction::A
-        } else if keyboard_input.just_pressed(KeyCode::S) {
-            Direction::S
-        } else if keyboard_input.just_pressed(KeyCode::W) {
-            Direction::W
-        } else if keyboard_input.just_pressed(KeyCode::D) {
-            Direction::D
+        let dir: Direction = if keyboard_input.just_pressed(KeyCode::Left) {
+            Direction::Left
+        } else if keyboard_input.just_pressed(KeyCode::Down) {
+            Direction::Down
+        } else if keyboard_input.just_pressed(KeyCode::Up) {
+            Direction::Up
+        } else if keyboard_input.just_pressed(KeyCode::Right) {
+            Direction::Right
         } else {
             head.direction
         };
@@ -159,59 +144,29 @@ fn snake_movement_input(keyboard_input: Res<Input<KeyCode>>, mut heads: Query<&m
 }
 
 fn snake_movement(
+    mut heads: Query<(&mut Position, &SnakeHead)>,
     time: Res<Time>,
     mut timer: ResMut<BTimer>,
-    segments: ResMut<SnakeSegments>,
-    mut heads: Query<(Entity, &SnakeHead)>,
-    mut positions: Query<&mut Position>,
-    mut last_tail_position: ResMut<LastTailPosition>,
-    mut game_over_writer: EventWriter<GameOverEvent>,
 ) {
     if !timer.0.tick(time.delta()).finished() {
         return;
     }
 
-    if let Some((head_entity, head)) = heads.iter_mut().next() {
-        let segment_positions = segments
-            .iter()
-            .map(|e| *positions.get_mut(*e).unwrap())
-            .collect::<Vec<Position>>();
-
-        let mut head_pos = positions.get_mut(head_entity).unwrap();
+    if let Some((mut head_pos, head)) = heads.iter_mut().next() {
         match &head.direction {
-            Direction::A => {
+            Direction::Left => {
                 head_pos.x -= 1;
             }
-            Direction::D => {
+            Direction::Right => {
                 head_pos.x += 1;
             }
-            Direction::W => {
+            Direction::Up => {
                 head_pos.y += 1;
             }
-            Direction::S => {
+            Direction::Down => {
                 head_pos.y -= 1;
             }
         };
-
-        if head_pos.x < 0
-            || head_pos.y < 0
-            || head_pos.x as u32 >= ARENA_WIDTH
-            || head_pos.y as u32 >= ARENA_HEIGHT
-        {
-            game_over_writer.send(GameOverEvent);
-        }
-        if segment_positions.contains(&head_pos) {
-            game_over_writer.send(GameOverEvent);
-        }
-
-        segment_positions
-            .iter()
-            .zip(segments.iter().skip(1))
-            .for_each(|(pos, segment)| {
-                *positions.get_mut(*segment).unwrap() = *pos;
-            });
-
-        *last_tail_position = LastTailPosition(Some(*segment_positions.last().unwrap()));
     }
 }
 
@@ -280,46 +235,4 @@ fn spawn_segment(mut commands: Commands, position: Position) -> Entity {
         .insert(position)
         .insert(Size::square(0.65))
         .id()
-}
-
-fn snake_eating(
-    mut commands: Commands,
-    mut growth_writer: EventWriter<GrowthEvent>,
-    food_positions: Query<(Entity, &Position), With<Food>>,
-    head_positions: Query<&Position, With<SnakeHead>>,
-) {
-    for head_pos in head_positions.iter() {
-        for (ent, food_pos) in food_positions.iter() {
-            if food_pos == head_pos {
-                commands.entity(ent).despawn();
-                growth_writer.send(GrowthEvent);
-            }
-        }
-    }
-}
-
-fn snake_growth(
-    commands: Commands,
-    last_tail_position: Res<LastTailPosition>,
-    mut segments: ResMut<SnakeSegments>,
-    mut growth_reader: EventReader<GrowthEvent>,
-) {
-    if growth_reader.read().next().is_some() {
-        segments.push(spawn_segment(commands, last_tail_position.0.unwrap()));
-    }
-}
-
-fn game_over(
-    mut commands: Commands,
-    mut reader: EventReader<GameOverEvent>,
-    segments_res: ResMut<SnakeSegments>,
-    food: Query<Entity, With<Food>>,
-    segments: Query<Entity, With<SnakeSegment>>,
-) {
-    if reader.read().next().is_some() {
-        for ent in food.iter().chain(segments.iter()) {
-            commands.entity(ent).despawn();
-        }
-        spawn_snake(commands, segments_res);
-    }
 }

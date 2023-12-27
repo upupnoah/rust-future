@@ -50,19 +50,19 @@ impl Size {
 
 #[derive(PartialEq, Copy, Clone)]
 enum Direction {
-    A,
-    W,
-    D,
-    S,
+    Left,
+    Up,
+    Right,
+    Down,
 }
 
 impl Direction {
     fn opposite(self) -> Self {
         match self {
-            Self::A => Self::D,
-            Self::D => Self::A,
-            Self::W => Self::S,
-            Self::S => Self::W,
+            Self::Left => Self::Right,
+            Self::Right => Self::Left,
+            Self::Up => Self::Down,
+            Self::Down => Self::Up,
         }
     }
 }
@@ -129,7 +129,7 @@ fn spawn_snake(mut commands: Commands, mut segments: ResMut<SnakeSegments>) {
                 ..default()
             })
             .insert(SnakeHead {
-                direction: Direction::W,
+                direction: Direction::Up,
             })
             .insert(SnakeSegment)
             .insert(Position { x: 3, y: 3 })
@@ -141,14 +141,14 @@ fn spawn_snake(mut commands: Commands, mut segments: ResMut<SnakeSegments>) {
 
 fn snake_movement_input(keyboard_input: Res<Input<KeyCode>>, mut heads: Query<&mut SnakeHead>) {
     if let Some(mut head) = heads.iter_mut().next() {
-        let dir: Direction = if keyboard_input.just_pressed(KeyCode::A) {
-            Direction::A
-        } else if keyboard_input.just_pressed(KeyCode::S) {
-            Direction::S
-        } else if keyboard_input.just_pressed(KeyCode::W) {
-            Direction::W
-        } else if keyboard_input.just_pressed(KeyCode::D) {
-            Direction::D
+        let dir: Direction = if keyboard_input.just_pressed(KeyCode::Left) {
+            Direction::Left
+        } else if keyboard_input.just_pressed(KeyCode::Down) {
+            Direction::Down
+        } else if keyboard_input.just_pressed(KeyCode::Up) {
+            Direction::Up
+        } else if keyboard_input.just_pressed(KeyCode::Right) {
+            Direction::Right
         } else {
             head.direction
         };
@@ -179,16 +179,16 @@ fn snake_movement(
 
         let mut head_pos = positions.get_mut(head_entity).unwrap();
         match &head.direction {
-            Direction::A => {
+            Direction::Left => {
                 head_pos.x -= 1;
             }
-            Direction::D => {
+            Direction::Right => {
                 head_pos.x += 1;
             }
-            Direction::W => {
+            Direction::Up => {
                 head_pos.y += 1;
             }
-            Direction::S => {
+            Direction::Down => {
                 head_pos.y -= 1;
             }
         };
