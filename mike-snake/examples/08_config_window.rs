@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 const SNAKE_HEAD_COLOR: Color = Color::rgb(0.7, 0.7, 0.7);
-const SNAKE_SEGMENT_COLOR: Color = Color::rgb(0.3, 0.3, 0.3);
+// const SNAKE_SEGMENT_COLOR: Color = Color::rgb(0.3, 0.3, 0.3);
 const ARENA_WIDTH: u32 = 25;
 const ARENA_HEIGHT: u32 = 25;
 
